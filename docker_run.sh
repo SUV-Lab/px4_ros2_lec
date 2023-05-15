@@ -16,7 +16,7 @@ if docker images | awk -v image_name="mdeagewt/px4_ros2" -v image_tag="1.0" '$1 
       -e NVIDIA_DRIVER_CAPABILITIES=all \
       -v /tmp/.X11-unix:/tmp/.X11-unix:ro \
       -v /dev:/dev:rw \
-      -v $SCRIPT_PATH/ros_ws:/home/user/ros_ws \
+      -v $SCRIPT_PATH/lab:/home/user/lab \
       -w /home/user \
       --hostname $(hostname) \
       --group-add dialout \
@@ -32,7 +32,7 @@ if docker images | awk -v image_name="mdeagewt/px4_ros2" -v image_tag="1.0" '$1 
       --env="QT_X11_NO_MITSHM=1" \
       -v /tmp/.X11-unix:/tmp/.X11-unix:ro \
       -v /dev:/dev:rw \
-      -v $SCRIPT_PATH/ros_ws:/home/user/ros_ws \
+      -v $SCRIPT_PATH/lab:/home/user/lab \
       -w /home/user \
       --hostname $(hostname) \
       --group-add dialout \
