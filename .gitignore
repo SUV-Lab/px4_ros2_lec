@@ -1,4 +1,4 @@
 .idea/
-ros_ws/install/
-ros_ws/build/
-ros_ws/log/
+lab/install/
+lab/build/
+lab/log/
