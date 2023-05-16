@@ -8,6 +8,7 @@ docker stop $PS_NAME 2>/dev/null
 docker rm $PS_NAME 2>/dev/null
 
 if docker images | awk -v image_name="mdeagewt/px4_ros2" -v image_tag="1.0" '$1 == image_name && $2 == image_tag {found=1; exit} END {exit !found}'; then
+  mkdir $SCRIPT_PATH/workspace
   if command -v nvidia-smi &> /dev/null; then
     echo "run docker image using gpu"
     docker run -it --privileged --gpus all \
@@ -16,7 +17,7 @@ if docker images | awk -v image_name="mdeagewt/px4_ros2" -v image_tag="1.0" '$1 
       -e NVIDIA_DRIVER_CAPABILITIES=all \
       -v /tmp/.X11-unix:/tmp/.X11-unix:ro \
       -v /dev:/dev:rw \
-      -v $SCRIPT_PATH/lab:/home/user/lab \
+      -v $SCRIPT_PATH/workspace:/home/user/todo/ros_ws/workspace \
       -w /home/user \
       --hostname $(hostname) \
       --group-add dialout \
@@ -32,7 +33,7 @@ if docker images | awk -v image_name="mdeagewt/px4_ros2" -v image_tag="1.0" '$1 
       --env="QT_X11_NO_MITSHM=1" \
       -v /tmp/.X11-unix:/tmp/.X11-unix:ro \
       -v /dev:/dev:rw \
-      -v $SCRIPT_PATH/lab:/home/user/lab \
+      -v $SCRIPT_PATH/workspace:/home/user/todo/ros_ws/workspace \
       -w /home/user \
       --hostname $(hostname) \
       --group-add dialout \
