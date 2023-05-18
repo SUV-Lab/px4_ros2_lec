@@ -1,0 +1,8 @@
+[submodule "lab/PX4-Autopilot"]
+	path = lab/PX4-Autopilot
+	url = https://github.com/SUV-Lab/PX4-Autopilot.git
+	branch = solution
+[submodule "lab/src/px4_msgs"]
+	path = lab/src/px4_msgs
+	url = https://github.com/SUV-Lab/px4_msgs.git
+	branch = solution
