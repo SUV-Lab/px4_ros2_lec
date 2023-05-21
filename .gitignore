@@ -1,4 +1,9 @@
 .idea/
+
 lab/install/
 lab/build/
 lab/log/
+
+log/
+build/
+install/
