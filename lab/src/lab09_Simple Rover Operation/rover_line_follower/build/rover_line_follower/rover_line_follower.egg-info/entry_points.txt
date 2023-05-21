@@ -1,2 +1,0 @@
-[console_scripts]
-follower = rover_line_follwer.follower:main
