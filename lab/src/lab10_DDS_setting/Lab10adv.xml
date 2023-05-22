@@ -1,0 +1,42 @@
+<dds>
+    <log>
+        <use_default>FALSE</use_default>
+        <consumer>
+            <class>StdoutConsumer</class>
+        </consumer>
+        <consumer>
+            <class>StdoutErrConsumer</class>
+            <property>
+                <name>stderr_threshold</name>
+                <value>Log::Kind::Info</value>
+            </property>
+        </consumer>
+        <consumer>
+            <class>FileConsumer</class>
+            <property>
+                <name>filename</name>
+                <value>fastdds_log_datareader.log</value>
+            </property>
+            <property>
+                <name>append</name>
+                <value>FALSE</value>
+            </property>
+        </consumer>
+    </log>
+<profiles xmlns="http://www.eprosima.com/XMLSchemas/fastRTPS_Profiles">
+    <participant profile_name="ROS2_profile" is_default_profile="true">
+	    <rtps>
+		    <builtin>
+			    <discovery_config>
+              <initialAnnouncements> 
+                  <count>3</count>
+                  <period>
+                      <sec>10</sec>
+                  </period>
+              </initialAnnouncements>
+           </discovery_config>
+          </builtin>
+        </rtps>
+			</participant>
+	</profiles>
+</dds>
