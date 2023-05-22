@@ -1,8 +1,8 @@
 .idea/
 
-lab/install/
-lab/build/
-lab/log/
+lab/*/install/
+lab/*/build/
+lab/*/log/
 
 log/
 build/
