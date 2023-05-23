@@ -1,3 +1,3 @@
-# main브랜치에서 작업 후 작업한 파일 solution 브랜치에 적용
+# 정규보수교육 프로그램 ROS2 강좌
 
-+ 노션에 도커 실행파일로 이미지 실행
+![image](https://github.com/SUV-Lab/px4_ros2_lec/assets/88468818/7388652b-f79b-4aea-a3bd-eef27776e91c)
