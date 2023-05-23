@@ -4,6 +4,189 @@ PS_NAME=px4_ros2
 container_name="px4_ros2"
 counter=1
 
+# publisher ==> packet capture and N publisher , last publisher default awake 20s it change $3
+if [ "$1" == "server_talker" -o "$1" == "talker" ]; then
+	set="$2"
+
+	if [ -z "$3" ]; then
+		time="20"
+	else	
+		time="$3"
+	fi
+	
+	for var in $(seq 1 $set)
+	do
+		sum=$(expr $set - $var + 1)
+		echo "Set Server_Talker $sum"
+		PS_NAME="${container_name}_publisher_${sum}"
+		if docker images | awk -v image_name="stmoon/px4_ros2" -v image_tag="lec" '$1 == image_name && $2 == image_tag {found=1; exit} END {exit !found}'; then
+		  if command -v nvidia-smi &> /dev/null; then
+		    echo "run docker image using gpu"
+		    docker run -it --privileged --gpus all \
+		      -e DISPLAY=$DISPLAY \
+		      -d \
+		      --rm \
+		      --env="QT_X11_NO_MITSHM=1" \
+		      -e NVIDIA_DRIVER_CAPABILITIES=all \
+		      -v /tmp/.X11-unix:/tmp/.X11-unix:ro \
+		      -v /dev:/dev:rw \
+		      -w /home/user \
+		      --hostname $(hostname) \
+		      --group-add dialout \
+		      --user user \
+		      --shm-size 4096m \
+		      --name $PS_NAME stmoon/px4_ros2:lec bash -c "sleep $time"
+		  else
+		    echo "run docker image without using gpu"
+		    echo "if you have gpu or gazebo runs with black screen, install nvidia-driver and nvidia-docker"
+		    docker run -it --privileged \
+		      -e DISPLAY=$DISPLAY \
+		      -d \
+		      --rm \
+		      --env="QT_X11_NO_MITSHM=1" \
+		      -v /tmp/.X11-unix:/tmp/.X11-unix:ro \
+		      -v /dev:/dev:rw \
+		      -w /home/user \
+		      --hostname $(hostname) \
+		      --group-add dialout \
+		      --user user \
+		      --shm-size 4096m \
+		      --name $PS_NAME stmoon/px4_ros2:lec bash -c "sleep $time"
+		  fi
+		else
+		    echo "download docker image first using \"docker pull stmoon/px4_ros2:lec\""
+		fi
+		
+		if [ "$1" == "server_talker" ]; then
+			if [ $sum -eq 1 ]; then
+			    docker exec $PS_NAME bash -c 'source /opt/ros/humble/setup.bash && export ROS_DISCOVERY_SERVER=172.17.0.2:11811 && ros2 run demo_nodes_cpp talker --ros-args --remap __node:=talker_discovery_server'
+			else
+			    docker exec -d $PS_NAME bash -c 'source /opt/ros/humble/setup.bash && export ROS_DISCOVERY_SERVER=172.17.0.2:11811 && ros2 run demo_nodes_cpp talker --ros-args --remap __node:=talker_discovery_server'
+			fi
+		fi
+		if [ "$1" == "talker" ]; then
+			if [ $sum -eq 1 ]; then
+			    docker exec $PS_NAME bash -c 'source /opt/ros/humble/setup.bash && ros2 run demo_nodes_cpp talker --ros-args --remap __node:=Simple_talker'
+			else
+			    docker exec -d $PS_NAME bash -c 'source /opt/ros/humble/setup.bash && ros2 run demo_nodes_cpp talker --ros-args --remap __node:=Simple_talker'
+			fi
+		fi
+	done
+exit
+fi
+# ----------------------------------------------------------------
+
+
+# listener ==> Discovery Server and Server listener , Server listener is always awake 
+if [ "$1" == "server_listener" -o "$1" == "listener" ]; then
+	if docker ps -a --format "{{.Names}}" | grep -q "$container_name"; then
+	    while true; do
+		new_name="${container_name}_${counter}"
+		if ! docker ps -a --format "{{.Names}}" | grep -q "$new_name"; then
+		    container_name="$new_name"
+		    break
+		fi
+		counter=$((counter + 1))
+	    done
+	fi
+PS_NAME="${container_name}"
+PS_NAME1="${container_name}_S"
+fi
+
+if [ "$1" == "server_listener" -o "$1" == "listener" ]; then
+xhost +
+
+	if [ "$1" == "server_listener" ]; then
+
+		if docker images | awk -v image_name="stmoon/px4_ros2" -v image_tag="lec" '$1 == image_name && $2 == image_tag {found=1; exit} END {exit !found}'; then
+		  if command -v nvidia-smi &> /dev/null; then
+		    echo "run docker image using gpu"
+		    docker run -it --privileged --gpus all \
+		      -e DISPLAY=$DISPLAY \
+		      -d \
+		      --env="QT_X11_NO_MITSHM=1" \
+		      -e NVIDIA_DRIVER_CAPABILITIES=all \
+		      -v /tmp/.X11-unix:/tmp/.X11-unix:ro \
+		      -v /dev:/dev:rw \
+		      -w /home/user \
+		      --hostname $(hostname) \
+		      --group-add dialout \
+		      --user user \
+		      --shm-size 4096m \
+		      --name $PS_NAME1 stmoon/px4_ros2:lec bash
+		  else
+		    echo "run docker image without using gpu"
+		    echo "if you have gpu or gazebo runs with black screen, install nvidia-driver and nvidia-docker"
+		    docker run -it --privileged \
+		      -e DISPLAY=$DISPLAY \
+		      -d \
+		      --env="QT_X11_NO_MITSHM=1" \
+		      -v /tmp/.X11-unix:/tmp/.X11-unix:ro \
+		      -v /dev:/dev:rw \
+		      -w /home/user \
+		      --hostname $(hostname) \
+		      --group-add dialout \
+		      --user user \
+		      --shm-size 4096m \
+		      --name $PS_NAME1 stmoon/px4_ros2:lec bash
+		  fi
+		else
+		    echo "download docker image first using \"docker pull stmoon/px4_ros2:lec\""
+		fi
+		docker exec -d $PS_NAME1 bash -c 'source /opt/ros/humble/setup.bash && fastdds discovery --server-id 0'
+	fi
+
+
+	if docker images | awk -v image_name="stmoon/px4_ros2" -v image_tag="lec" '$1 == image_name && $2 == image_tag {found=1; exit} END {exit !found}'; then
+	  if command -v nvidia-smi &> /dev/null; then
+	    echo "run docker image using gpu"
+	    docker run -it --privileged --gpus all \
+	      -e DISPLAY=$DISPLAY \
+	      -d \
+	      --env="QT_X11_NO_MITSHM=1" \
+	      -e NVIDIA_DRIVER_CAPABILITIES=all \
+	      -v /tmp/.X11-unix:/tmp/.X11-unix:ro \
+	      -v /dev:/dev:rw \
+	      -w /home/user \
+	      --hostname $(hostname) \
+	      --group-add dialout \
+	      --user user \
+	      --shm-size 4096m \
+	      --name $PS_NAME stmoon/px4_ros2:lec bash
+	  else
+	    echo "run docker image without using gpu"
+	    echo "if you have gpu or gazebo runs with black screen, install nvidia-driver and nvidia-docker"
+	    docker run -it --privileged \
+	      -e DISPLAY=$DISPLAY \
+	      --env="QT_X11_NO_MITSHM=1" \
+	      -v /tmp/.X11-unix:/tmp/.X11-unix:ro \
+	      -v /dev:/dev:rw \
+	      -w /home/user \
+	      --hostname $(hostname) \
+	      --group-add dialout \
+	      --user user \
+	      --shm-size 4096m \
+	      --name $PS_NAME stmoon/px4_ros2:lec bash
+	  fi
+	else
+	    echo "download docker image first using \"docker pull stmoon/px4_ros2:lec\""
+	fi
+	
+	if [ "$1" == "server_listener" ]; then
+		docker exec $PS_NAME bash -c 'source /opt/ros/humble/setup.bash && export ROS_DISCOVERY_SERVER=172.17.0.2:11811 && ros2 run demo_nodes_cpp listener --ros-args --remap __node:=listener_discovery_server'
+	fi
+	
+	if [ "$1" == "listener" ]; then
+		docker exec $PS_NAME bash -c 'source /opt/ros/humble/setup.bash && ros2 run demo_nodes_cpp listener --ros-args --remap __node:=Simple_listener'
+	fi
+exit
+fi
+
+
+#-------------------------------------------
+
+
+
 if [ "$1" == "new" ]; then
 	if docker ps -a --format "{{.Names}}" | grep -q "$container_name"; then
 	    while true; do
@@ -16,9 +199,14 @@ if [ "$1" == "new" ]; then
 	    done
 	fi
 PS_NAME="${container_name}"
-elif [ "$1" == "lab09" ]; then
+elif [ "$1" == "lab10" ]; then
 	echo "stopping all containers"
 	docker stop $(docker ps -aq)
+	echo " "
+	echo "--------------------"
+	echo "    Lab 10 Ready"
+	echo "--------------------"
+	echo " "
 	exit 0
 elif [ "$1" == "remove" ]; then
 	echo "stopping and removing all container"
@@ -33,7 +221,7 @@ fi
 
 echo "make container"
 xhost +
-if docker images | awk -v image_name="mdeagewt/px4_ros2" -v image_tag="1.0" '$1 == image_name && $2 == image_tag {found=1; exit} END {exit !found}'; then
+if docker images | awk -v image_name="stmoon/px4_ros2" -v image_tag="lec" '$1 == image_name && $2 == image_tag {found=1; exit} END {exit !found}'; then
   if command -v nvidia-smi &> /dev/null; then
     echo "run docker image using gpu"
     docker run -it --privileged --gpus all \
@@ -47,7 +235,7 @@ if docker images | awk -v image_name="mdeagewt/px4_ros2" -v image_tag="1.0" '$1 
       --group-add dialout \
       --user user \
       --shm-size 4096m \
-      --name $PS_NAME mdeagewt/px4_ros2:1.0 bash
+      --name $PS_NAME stmoon/px4_ros2:lec bash
   else
     echo "run docker image without using gpu"
     echo "if you have gpu or gazebo runs with black screen, install nvidia-driver and nvidia-docker"
@@ -61,8 +249,8 @@ if docker images | awk -v image_name="mdeagewt/px4_ros2" -v image_tag="1.0" '$1 
       --group-add dialout \
       --user user \
       --shm-size 4096m \
-      --name $PS_NAME mdeagewt/px4_ros2:1.0 bash
+      --name $PS_NAME stmoon/px4_ros2:lec bash
   fi
 else
-    echo "download docker image first using \"docker pull mdeagewt/px4_ros2:1.0\""
+    echo "download docker image first using \"docker pull stmoon/px4_ros2:lec\""
 fi
