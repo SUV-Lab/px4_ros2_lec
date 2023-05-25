@@ -424,6 +424,7 @@ if docker images | awk -v image_name="stmoon/px4_ros2" -v image_tag="lec" '$1 ==
 				--device=/dev/dri/card0 \
 				--hostname $(hostname) \
 				--group-add dialout \
+				--network none \
 				--user user \
 				--ipc host \
 				--shm-size 4096m \
@@ -447,6 +448,7 @@ if docker images | awk -v image_name="stmoon/px4_ros2" -v image_tag="lec" '$1 ==
 				--device=/dev/dri/card0 \
 				--hostname $(hostname) \
 				--group-add dialout \
+				--network none \
 				--user user \
 				--ipc host \
 				--shm-size 4096m \
@@ -466,6 +468,7 @@ if docker images | awk -v image_name="stmoon/px4_ros2" -v image_tag="lec" '$1 ==
 				-w /home/user \
 				--hostname $(hostname) \
 				--group-add dialout \
+				--network none \
 				--user user \
 				--shm-size 4096m \
 				--name $PS_NAME stmoon/px4_ros2:lec bash
@@ -480,6 +483,7 @@ if docker images | awk -v image_name="stmoon/px4_ros2" -v image_tag="lec" '$1 ==
 				-w /home/user \
 				--hostname $(hostname) \
 				--group-add dialout \
+				--network none \
 				--user user \
 				--shm-size 4096m \
 				--name $PS_NAME stmoon/px4_ros2:lec bash
