@@ -158,6 +158,7 @@ xhost +
 	    echo "if you have gpu or gazebo runs with black screen, install nvidia-driver and nvidia-docker"
 	    docker run -it --privileged \
 	      -e DISPLAY=$DISPLAY \
+	      -d \
 	      --env="QT_X11_NO_MITSHM=1" \
 	      -v /tmp/.X11-unix:/tmp/.X11-unix:ro \
 	      -v /dev:/dev:rw \
